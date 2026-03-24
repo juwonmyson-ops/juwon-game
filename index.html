@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주원이게임 - 암산 왕 도전</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #f0f2f5; margin: 0; }
+        #game-container { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        .timer { font-size: 1.2rem; color: #ff4757; font-weight: bold; margin-bottom: 10px; }
+        .question { font-size: 2rem; margin: 20px 0; font-weight: bold; }
+        .input-group { display: flex; gap: 5px; justify-content: center; }
+        input { width: 80px; padding: 10px; font-size: 1.2rem; border: 2px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 20px; font-size: 1rem; cursor: pointer; background: #2f3542; color: white; border: none; border-radius: 5px; }
+        button:hover { background: #57606f; }
+        #result-screen { display: none; text-align: left; width: 100%; max-height: 400px; overflow-y: auto; }
+        .wrong-item { color: #ff4757; margin-bottom: 5px; font-size: 0.9rem; }
+        .correct-item { color: #2ed573; margin-bottom: 5px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="play-screen">
+        <div class="timer">남은 시간: <span id="time-left">10</span>초</div>
+        <div id="progress">문제 1 / 10</div>
+        <div class="question" id="question-text">준비...</div>
+        <div class="input-group">
+            <input type="number" id="answer-input" placeholder="정답">
+            <button onclick="checkAnswer()">확인</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <h2>게임 종료!</h2>
+        <div id="score-summary"></div>
+        <hr>
+        <div id="wrong-answers-list"></div>
+        <button onclick="location.reload()" style="width:100%; margin-top:20px;">다시 하기</button>
+    </div>
+</div>
+
+<script>
+    let currentQuestion = 0;
+    let score = 0;
+    let timeLeft = 10;
+    let timerInterval;
+    let questions = [];
+    let userAnswers = [];
+
+    // 문제 생성 로직
+    function generateQuestions() {
+        const types = ['add', 'mul', 'div'];
+        for (let i = 0; i < 10; i++) {
+            const type = types[Math.floor(Math.random() * types.length)];
+            let q, a;
+            
+            if (type === 'add') {
+                const n1 = Math.floor(Math.random() * 90) + 10;
+                const n2 = Math.floor(Math.random() * 90) + 10;
+                q = `${n1} + ${n2}`;
+                a = n1 + n2;
+            } else if (type === 'mul') {
+                const n1 = Math.floor(Math.random() * 90) + 10;
+                const n2 = Math.floor(Math.random() * 8) + 2;
+                q = `${n1} × ${n2}`;
+                a = n1 * n2;
+            } else { // div (나누기 - 역산)
+                const divisor = Math.random() > 0.5 ? Math.floor(Math.random() * 9) + 2 : Math.floor(Math.random() * 90) + 10;
+                const quotient = Math.floor(Math.random() * 9) + 2;
+                const dividend = divisor * quotient;
+                q = `${dividend} ÷ ${divisor}`;
+                a = quotient;
+            }
+            questions.push({ q, a });
+        }
+    }
+
+    function startTimer() {
+        timeLeft = 10;
+        document.getElementById('time-left').innerText = timeLeft;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('time-left').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                checkAnswer(true); // 시간 초과 시 자동 오답 처리
+            }
+        }, 1000);
+    }
+
+    function showQuestion() {
+        if (currentQuestion >= 10) {
+            endGame();
+            return;
+        }
+        document.getElementById('progress').innerText = `문제 ${currentQuestion + 1} / 10`;
+        document.getElementById('question-text').innerText = questions[currentQuestion].q;
+        document.getElementById('answer-input').value = '';
+        document.getElementById('answer-input').focus();
+        startTimer();
+    }
+
+    function checkAnswer(isTimeout = false) {
+        clearInterval(timerInterval);
+        const inputField = document.getElementById('answer-input');
+        const userAnswer = isTimeout ? "시간초과" : parseInt(inputField.value);
+        const correctAnswer = questions[currentQuestion].a;
+
+        const isCorrect = userAnswer === correctAnswer;
+        if (isCorrect) score++;
+
+        userAnswers.push({
+            q: questions[currentQuestion].q,
+            correct: correctAnswer,
+            user: userAnswer,
+            status: isCorrect
+        });
+
+        currentQuestion++;
+        showQuestion();
+    }
+
+    function endGame() {
+        document.getElementById('play-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        document.getElementById('score-summary').innerText = `맞은 개수: ${score} / 10`;
+
+        const list = document.getElementById('wrong-answers-list');
+        userAnswers.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = item.status ? 'correct-item' : 'wrong-item';
+            div.innerText = `${index + 1}. ${item.q} = ${item.correct} (입력: ${item.user})`;
+            list.appendChild(div);
+        });
+    }
+
+    // 엔터키 지원
+    document.getElementById('answer-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkAnswer();
+    });
+
+    generateQuestions();
+    showQuestion();
+</script>
+</body>
+</html>
