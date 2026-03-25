@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주원이의 암산 게임 (15초)</title>
+    <title>주원이의 암산 게임 (10초)</title>
     <style>
         body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #f0f2f5; margin: 0; }
         #game-container { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; text-align: center; }
@@ -22,7 +22,7 @@
 
 <div id="game-container">
     <div id="play-screen">
-        <div class="timer">남은 시간: <span id="time-left">15</span>초</div>
+        <div class="timer">남은 시간: <span id="time-left">10</span>초</div>
         <div id="progress">문제 1 / 10</div>
         <div class="question" id="question-text">준비...</div>
         <div class="input-group">
@@ -32,7 +32,7 @@
     </div>
 
     <div id="result-screen">
-        <h2>게임 종료! (15초 모드)</h2>
+        <h2>게임 종료!</h2>
         <div id="score-summary"></div>
         <hr>
         <div id="wrong-answers-list"></div>
@@ -43,7 +43,7 @@
 <script>
     let currentQuestion = 0;
     let score = 0;
-    let timeLeft = 15; // 10초에서 15초로 변경
+    let timeLeft = 10; // 다시 10초로 변경
     let timerInterval;
     let questions = [];
     let userAnswers = [];
@@ -76,7 +76,7 @@
     }
 
     function startTimer() {
-        timeLeft = 15; // 시작 시간 15초 설정
+        timeLeft = 10; // 시작 시간 10초 설정
         document.getElementById('time-left').innerText = timeLeft;
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
@@ -116,30 +116,4 @@
             status: isCorrect
         });
 
-        currentQuestion++;
-        showQuestion();
-    }
-
-    function endGame() {
-        document.getElementById('play-screen').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'block';
-        document.getElementById('score-summary').innerText = `맞은 개수: ${score} / 10`;
-
-        const list = document.getElementById('wrong-answers-list');
-        userAnswers.forEach((item, index) => {
-            const div = document.createElement('div');
-            div.className = item.status ? 'correct-item' : 'wrong-item';
-            div.innerText = `${index + 1}. ${item.q} = ${item.correct} (입력: ${item.user})`;
-            list.appendChild(div);
-        });
-    }
-
-    document.getElementById('answer-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') checkAnswer();
-    });
-
-    generateQuestions();
-    showQuestion();
-</script>
-</body>
-</html>
+        currentQuestion
